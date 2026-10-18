@@ -51,7 +51,7 @@ The Tester initiates each test, validates the initial and final states, and rese
 The Tester uses the Generator to create and publish data to Kafka. \
 The Ingestor consumes data from Kafka and writes it to MinIO. \
 The Tester validates the data in MinIO based on the scenario triggered by the Generator. \
-The Tester uses the Cleaner microservice to delete all data before and after each successful test. \
+The Tester uses the Cleaner microservice to delete all data before each test. \
 The Tester uses the Cleaner microservice to delete data from Kafka, Ingestor and MinIO before each test. \
 The Tester preserves the post test data to enable Developers to investigate potential failures. \
 A post-test data cleanup requires an explicit, manual call to the Cleaner API.
@@ -245,7 +245,8 @@ Scenario-specific scripts should contain only the logic unique to their scenario
 When the Generator Spring Boot microservice starts:
 - Validates that the PostgreSQL `scenario` and `event` tables exist. The SQL tables are already created using an external script/config.
 - Initializes the `scenario` table using the registered scenario JSON files.
-- Does not modify the `event` table, which remains empty after startup.
+- Does not modify the `event` table. It has the same data it had before Generator server startup. 
+- The `event` table may already contain initialized events from previous runs or it is still empty.
 
 Developers must manually run a Python script to generate event data for a specific scenario from its JSON definition.
 
