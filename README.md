@@ -51,7 +51,6 @@ The Tester initiates each test, validates the initial and final states, and rese
 The Tester uses the Generator to create and publish data to Kafka. \
 The Ingestor consumes data from Kafka and writes it to MinIO. \
 The Tester validates the data in MinIO based on the scenario triggered by the Generator. \
-The Tester uses the Cleaner microservice to delete all data before each test. \
 The Tester uses the Cleaner microservice before each test to delete all data from Kafka, the Ingestor and MinIO. \
 The Tester preserves the post test data to enable Developers to investigate potential failures. \
 A post-test data cleanup requires an explicit, manual call to the Cleaner API.
@@ -648,7 +647,7 @@ The initial end-to-end environment will include:
 - Cleaner
 
 Scenario metadata and Python script directories are mounted into Generator. \
-PostgreSQL uses persistent storage that remain after docker restart. \ 
+PostgreSQL uses persistent storage that remains after docker restart. \ 
 The Java JAR and Docker image do not contain large generated event datasets. \
 Docker configuration and startup instructions will be added during implementation.
 
