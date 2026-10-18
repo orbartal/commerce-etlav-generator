@@ -45,6 +45,20 @@ For the MVP, Generator simulates both the retailer and the gateway receiving ret
 See full context in [Manager README](https://github.com/orbartal/commerce-etlav-manager/blob/main/README.md) \
 Generator microservice is inside group 'Data Generation and Ingestion' (left-middle of the entire diagram).
 
+### Test Data Generation and Ingestion
+The Tester initiates each test, validates the initial and final states, and resets the data. \
+The Tester uses the Generator to create and publish data to Kafka. \
+The Ingestor consumes data from Kafka and writes it to MinIO. \
+The Tester validates the data in MinIO based on the scenario triggered by the Generator. \
+The Tester uses the Cleaner microservice to delete all data before and after each test. \
+If a test fails, the Tester preserves the data so the Developer can investigate the failure.
+
+```text
+Tester --> Cleaner (delete data from three services)
+  ↓          ↓           ↓             ↓
+Generator --> Kafka --> Ingestor --> MinIO
+```
+
 ### Goals
 
 - Generate realistic commerce event scenarios.
