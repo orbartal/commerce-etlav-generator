@@ -39,6 +39,12 @@ The event-streaming flow generates, transports, and persists commerce events for
 In production, events would originate from real commerce systems. \
 For the MVP, Generator simulates both the retailer and the gateway receiving retailer events.
 
+### Commerce etlav Architecture
+
+![Commerce ETLAV Architecture](https://raw.githubusercontent.com/orbartal/commerce-etlav-manager/refs/heads/main/docs/images/commerce_etlav_microservices_architecture_150kb.jpg)
+See full context in [Manager README](https://github.com/orbartal/commerce-etlav-manager/blob/main/README.md) \
+Generator microservice is inside group 'Data Generation and Ingestion' (left-middle of the entire diagram).
+
 ### Goals
 
 - Generate realistic commerce event scenarios.
@@ -50,7 +56,7 @@ For the MVP, Generator simulates both the retailer and the gateway receiving ret
 
 Generator does not implement commerce analytics, event ingestion, or persistent storage of processed events.
 
-## 2. Architecture
+## 2. Generator Architecture
 
 Generator contains two independent components.
 
