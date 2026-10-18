@@ -35,14 +35,15 @@ Generator belongs to the CommerceETLAV event-streaming flow:
 Generator → Kafka → Ingestor → MinIO
 ```
 
-The event-streaming flow generates, transports, and persists commerce events for other CommerceETLAV services to analyze. \
+The event-streaming flow generates, transports, and persists commerce events for other services to analyze. \
 In production, events would originate from real commerce systems. \
 For the MVP, Generator simulates both the retailer and the gateway receiving retailer events.
 
 ### Commerce etlav Architecture
 
 ![Commerce ETLAV Architecture](https://raw.githubusercontent.com/orbartal/commerce-etlav-manager/refs/heads/main/docs/images/commerce_etlav_microservices_architecture_150kb.jpg)
-See full context in [Manager README](https://github.com/orbartal/commerce-etlav-manager/blob/main/README.md) \
+See full context in [Manager README](https://github.com/orbartal/commerce-etlav-manager/blob/main/README.md) 
+and more details in section [Architecture: Diagram 2.8](https://github.com/orbartal/commerce-etlav-manager/blob/main/docs/architecture.md#diagram-28---jpg-image). \
 Generator microservice is inside group 'Data Generation and Ingestion' (left-middle of the entire diagram).
 
 ### Test Data Generation and Ingestion
