@@ -4,12 +4,10 @@
 
 ## Overview
 
-**CommerceETLAV Generator** (`commerce-etlav-generator`) is a microservice in the [CommerceETLAV](https://github.com/orbartal/commerce-etlav-manager) project.
-
-CommerceETLAV demonstrates Big Data, ETL, streaming, analytics, and AI/ML using a local microservice architecture.
-
-Generator simulates commerce activity and publishes predefined event scenarios to Kafka. Ingestor consumes these events and persists them to MinIO for downstream processing and analysis.
-
+**CommerceETLAV Generator** (`commerce-etlav-generator`) is a microservice in project: [CommerceETLAV](https://github.com/orbartal/commerce-etlav-manager). \
+CommerceETLAV demonstrates Big Data, ETL, streaming, analytics, and AI/ML using microservice architecture. \
+Generator simulates commerce activity and publishes predefined event scenarios to Kafka. \
+Ingestor consumes these events and persists them to MinIO for downstream processing and analysis. \
 Generator is designed for reproducible testing, simple operation, and future extensibility.
 
 ## Table of Contents
@@ -37,9 +35,9 @@ Generator belongs to the CommerceETLAV event-streaming flow:
 Generator → Kafka → Ingestor → MinIO
 ```
 
-The event-streaming flow generates, transports, and persists commerce events for other CommerceETLAV services to analyze.
-
-In production, events would originate from real commerce systems. For the MVP, Generator simulates both the retailer and the gateway receiving retailer events.
+The event-streaming flow generates, transports, and persists commerce events for other CommerceETLAV services to analyze. \
+In production, events would originate from real commerce systems. \
+For the MVP, Generator simulates both the retailer and the gateway receiving retailer events.
 
 ### Goals
 
@@ -58,16 +56,13 @@ Generator contains two independent components.
 
 ### Java Application
 
-A Java 27, Spring Boot 4, and Maven 3 microservice.
-
-It exposes REST APIs, manages scenario metadata, reads predefined events from PostgreSQL, and publishes them to Kafka.
-
+A Java 27, Spring Boot 4, and Maven 3 microservice. \
+It exposes REST APIs, manages scenario metadata, reads predefined events from PostgreSQL, and publishes them to Kafka. \
 The application is stateless with respect to test execution. It does not maintain a persistent task history.
 
 ### Python Initialization
 
-Standalone Python scripts generate scenario events and populate PostgreSQL before testing.
-
+Standalone Python scripts generate scenario events and populate PostgreSQL before testing. \
 Python initialization is executed manually by a developer. Java does not execute Python scripts in the MVP.
 
 ### Data Flow
@@ -114,18 +109,16 @@ Each scenario has:
 - A predefined event sequence.
 - A dedicated Python generation script.
 
-The scenario JSON file is the authoritative source for scenario metadata.
-
-In the MVP, scenarios are registered before application startup. They cannot be created, modified, or deleted through REST APIs.
+The scenario JSON file is the authoritative source for scenario metadata. \
+In the MVP, scenarios are registered before application startup. \
+They cannot be created, modified, or deleted through REST APIs.
 
 ### Scenario Registration
 
-Spring Boot configuration contains the authoritative list of registered scenario UUIDs.
-
-Each registered UUID must have a corresponding scenario JSON file and Python script.
-
-Generator validates these relationships at startup. Missing or invalid required files cause startup failure.
-
+Spring Boot configuration contains the authoritative list of registered scenario UUIDs. \
+Each registered UUID must have a corresponding scenario JSON file and Python script. \
+Generator validates these relationships at startup. \
+Missing or invalid required files cause startup failure. \
 Unregistered files and scripts are ignored.
 
 ### Event Model
@@ -144,22 +137,18 @@ The MVP supports:
 
 All entity identifiers use immutable UUIDs.
 
-Each scenario has one fixed `datasetId`. Events contain their original UUIDs, business data, timestamps, and sequence numbers.
-
-Event content and ordering remain unchanged across repeated publications.
-
+Each scenario has one fixed `datasetId`. Events contain their original UUIDs, business data, timestamps, and sequence numbers. \
+Event content and ordering remain unchanged across repeated publications. \
 The original event data is deterministic. Kafka metadata and downstream processing metadata may differ between executions.
 
 ### Retail Clients
 
-Retail clients are predefined in configuration and have immutable UUIDs.
-
+Retail clients are predefined in configuration and have immutable UUIDs. \
 The MVP does not support dynamic client registration, authentication, or authorization.
 
 ## 4. PostgreSQL Storage
 
-Generator uses PostgreSQL to store scenario metadata and original events.
-
+Generator uses PostgreSQL to store scenario metadata and original events. \
 PostgreSQL data persists between tests and is never deleted by Cleaner.
 
 ### Scenario Table
@@ -173,9 +162,7 @@ PostgreSQL data persists between tests and is never deleted by Cleaner.
 | `is_ready` | BOOLEAN | Indicates successful event initialization |
 | `event_count` | BIGINT | Number of initialized events |
 
-Scenario UUID and name must be unique.
-
-A scenario is available for publication only when `is_ready = true`.
+Scenario UUID and name must be unique. A scenario is available for publication only when `is_ready = true`.
 
 ### Event Table
 
@@ -208,32 +195,27 @@ A dedicated storage interface exposes only the operations Generator requires:
 - Stream all events belonging to a scenario in order.
 - Retrieve the scenario event count.
 
-The PostgreSQL implementation is hidden behind this interface.
-
-This allows future replacement with file storage, another SQL database, or a document database without changing Generator business logic.
+The PostgreSQL implementation is hidden behind this interface. \
+This allows future replacement of DB without changing Generator business logic. \
+Alternative DBs: file storage, another SQL database, or a document database
 
 ### Database Schema Management
 
-Database tables are created by a separate initialization script.
-
-Hibernate validates the existing schema but does not create or modify tables.
-
+Database tables are created by a separate initialization script. \
+Hibernate validates the existing schema but does not create or modify tables. \
 Database migration tools such as Flyway or Liquibase may be introduced later.
 
 ## 5. Python Initialization
 
-Python is responsible for generating event data before Java publishes it.
-
-Each scenario has its own Python generator script. Shared Python components provide reusable generation and persistence functionality.
+Python is responsible for generating event data before Java publishes it. \
+Each scenario has its own Python generator script. \
+Shared Python components provide reusable generation and persistence functionality.
 
 ### Components
 
-**EventsGenerator:** A scenario-specific Python iterator that yields one event at a time.
-
-**EventsWriter:** A shared component that writes generated events into PostgreSQL in batches of 1,000.
-
-**EventsManager:** A shared script that coordinates scenario loading, generation, persistence, and readiness validation.
-
+**EventsGenerator:** A scenario-specific Python iterator that yields one event at a time. \
+**EventsWriter:** A shared component that writes generated events into PostgreSQL in batches of 1,000. \
+**EventsManager:** A shared script that coordinates scenario loading, generation, persistence, and readiness validation. \
 Scenario-specific scripts should contain only the logic unique to their scenarios.
 
 ### Initialization Process
@@ -249,34 +231,27 @@ Scenario-specific scripts should contain only the logic unique to their scenario
 9. Update `event_count` with the actual count.
 10. Set `is_ready = true` as the final successful database operation.
 
-If initialization fails, the script exits with an error and leaves `is_ready = false`.
-
-Previously committed batches remain available for investigation.
-
+If initialization fails, the script exits with an error and leaves `is_ready = false`. \
+Previously committed batches remain available for investigation. \
 A subsequent initialization attempt deletes those incomplete events and restarts from event zero.
 
 ### Scenario Immutability
 
-The manager refuses to initialize a scenario that is already ready.
-
-The MVP does not provide an API to regenerate or overwrite a ready scenario.
-
-A developer may manually modify PostgreSQL to permit regeneration, but this is not recommended.
+The manager refuses to initialize a scenario that is already ready. \
+The MVP does not provide an API to regenerate or overwrite a ready scenario. \
+A developer may manually modify PostgreSQL to permit regene|ation, but this is not recommended.
 
 ### Initialization Safety
 
-Python initialization should normally finish before Generator begins publishing scenarios.
-
-Java checks scenario readiness before publication.
-
-The MVP does not implement distributed locking between Python and Java. Developers must not modify scenario event data while that scenario is being published.
+Python initialization should normally finish before Generator begins publishing scenarios. \
+Java checks scenario readiness before publication. \
+The MVP does not implement distributed locking between Python and Java. \
+Developers must not modify scenario event data while that scenario is being published.
 
 ## 6. REST API
 
-Generator exposes versioned REST APIs.
-
-Every REST request receives a new random UUID, `requestId`, for tracing.
-
+Generator exposes versioned REST APIs. \
+Every REST request receives a new random UUID, `requestId`, for tracing. \
 The request UUID appears in application logs and API responses.
 
 ### API Endpoints
@@ -298,10 +273,8 @@ List endpoints support standard zero-based page-number pagination.
 | `page` | `0` | Zero-based page number |
 | `size` | `10` | Maximum items returned per page |
 
-Pagination must preserve deterministic ordering.
-
-Scenario lists are ordered consistently. Event lists are ordered by `event_index`.
-
+Pagination must preserve deterministic ordering. \
+Scenario lists are ordered consistently. Event lists are ordered by `event_index`. \
 Paginated responses include the returned items and pagination metadata, including total item count.
 
 ### List Scenarios
@@ -332,28 +305,23 @@ Returns all scenario metadata:
 
 `GET /api/v1/scenarios/{scenarioId}/events`
 
-Returns event UUIDs in scenario order, together with their zero-based event indexes.
-
+Returns event UUIDs in scenario order, together with their zero-based event indexes. \
 Supports pagination.
 
 ### Get Event
 
 `GET /api/v1/scenarios/{scenarioId}/events/{eventId}`
 
-Returns the complete original event JSON stored in PostgreSQL.
-
+Returns the complete original event JSON stored in PostgreSQL. \
 The scenario UUID identifies the dataset to search.
 
 ### Publish Scenario
 
 `POST /api/v1/scenarios/{scenarioId}/publish`
 
-Publishes every event belonging to the scenario.
-
-The request optionally specifies `eventsPerSecond`.
-
-The default publication rate is one event per second. The value must remain within configured minimum and maximum limits.
-
+Publishes every event belonging to the scenario. \
+The request optionally specifies `eventsPerSecond`. \
+The default publication rate is one event per second. The value must remain within configured minimum and maximum limits. \
 The MVP does not support publishing only part of a scenario.
 
 ### Publication Response
@@ -370,9 +338,8 @@ A successful response contains:
 | `publishedEventCount` | Number of successfully acknowledged events |
 | `comment` | Additional information |
 
-`COMPLETED` means Generator finished publishing to Kafka.
-
-It does not mean Ingestor processed the events or MinIO persisted them.
+`COMPLETED` means Generator finished publishing to Kafka. \
+It does not mean Ingestor processed the events or MinIO persisted them. \
 
 ### Publication Failure
 
@@ -387,14 +354,12 @@ The failure response includes:
 - Zero-based index of the failed event.
 - Standard error details.
 
-Events already acknowledged by Kafka are not rolled back.
-
+Events already acknowledged by Kafka are not rolled back. \
 The MVP does not implement automatic retries, cancellation, or recovery.
 
 ## 7. Kafka Publication
 
-Generator publishes original scenario events to Kafka.
-
+Generator publishes original scenario events to Kafka. \
 Events are read from PostgreSQL in ascending `event_index` order.
 
 ### Publication Rules
@@ -410,8 +375,7 @@ The original event JSON must not be modified during publication.
 
 ### Rate Limiting
 
-Publication rate is independent of scenario content.
-
+Publication rate is independent of scenario content. \
 The same scenario can be published at different rates without changing its events.
 
 Global configuration defines:
@@ -424,18 +388,15 @@ The MVP prioritizes predictable behavior over maximum throughput.
 
 ### Concurrency
 
-Only one publication task may run at a time, regardless of scenario.
-
-A second publication request receives HTTP `409 Conflict`.
-
+Only one publication task may run at a time, regardless of scenario. \
+A second publication request receives HTTP `409 Conflict`. \
 The application does not queue publication requests.
 
 ### Failure Handling
 
-Generator reports the first failed event and the number of acknowledged events.
-
-Kafka acknowledgment failures may be ambiguous. The acknowledged count does not necessarily equal the number of events actually stored by Kafka.
-
+Generator reports the first failed event and the number of acknowledged events. \
+Kafka acknowledgment failures may be ambiguous. \
+The acknowledged count does not necessarily equal the number of events actually stored by Kafka. \
 The MVP does not provide transactional all-or-nothing publication.
 
 ## 8. Errors and Tracing
@@ -459,16 +420,14 @@ Every instance contains:
 
 `ErrorType` is an interface implemented only by Java enums.
 
-Each enum value identifies a specific exception creation location.
-
-The convention is to use each error enum value at one exception factory location, making it easier to locate the source of an error.
+Each enum value identifies a specific exception creation location. \
+The convention is to use each error enum value at one exception factory location in code. \
+In order to make it easier to locate the source of an error.
 
 ### Exception Factory
 
-`GeneratorExceptionFactory` is a marker interface.
-
-A dedicated stateless implementation provides methods that construct exceptions with appropriate messages, types, causes, and HTTP statuses.
-
+`GeneratorExceptionFactory` is a marker interface with many implementations ExceptionFactories (stateless classes). \
+Each ExceptionFactory provides methods that construct exceptions with appropriate messages, types, causes, and HTTP statuses. \
 Other components use this factory instead of constructing application exceptions directly.
 
 ### REST Error Handling
@@ -483,20 +442,14 @@ An error response contains:
 - `error.instance`
 - `error.message`
 
-Publication failures additionally include the failed event UUID, event index, and acknowledged event count when available.
-
-The `requestId` identifies the API request. The exception `instance` identifies the individual error occurrence.
-
-Both identifiers appear in logs.
-
-Internal stack traces and implementation details are not exposed to API callers.
+Publication failures additionally include the failed event UUID, event index, and acknowledged event count when available. \
+The `requestId` identifies the API request. The exception `instance` identifies the individual error occurrence. \
+Both identifiers appear in logs. Internal stack traces and implementation details are not exposed to API callers.
 
 ### Python Errors
 
-Python scripts are standalone developer tools.
-
-They may use ordinary Python exceptions and readable error messages.
-
+Python scripts are standalone developer tools. \
+They may use ordinary Python exceptions and readable error messages. \
 The Java exception architecture does not apply to Python.
 
 ## 9. Configuration
@@ -520,11 +473,10 @@ Configuration includes:
 
 ### External Files
 
-Scenario metadata and Python scripts use configurable directories.
-
-Development defaults may point to Spring Boot resources.
-
-Docker deployments use externally mounted directories so developers can add scenarios without rebuilding the Java application or Docker image.
+Scenario metadata and Python scripts use configurable directories. \
+Development defaults may point to Spring Boot resources. \
+Docker deployments use externally mounted directories. \
+Thus, developers can add scenarios without rebuilding the Java application or Docker image. 
 
 ### File Naming
 
@@ -555,10 +507,8 @@ It must verify:
 - Required retail client configuration is valid.
 - The PostgreSQL schema is valid.
 
-Missing or invalid required configuration causes startup failure.
-
-Unregistered scenario files and scripts are ignored.
-
+Missing or invalid required configuration causes startup failure. \
+Unregistered scenario files and scripts are ignored. \
 Missing generated event data does not prevent startup. Such scenarios remain unavailable for publication until initialized.
 
 ## 10. Testing and Cleanup
@@ -603,28 +553,21 @@ Tests verify:
 - Business relationships.
 - Successful persistence to MinIO.
 
-The comparison focuses on the original event data.
-
+The comparison focuses on the original event data. \
 Kafka metadata and downstream processing metadata may differ between runs.
 
 ### Cleaner Responsibilities
 
-`commerce-etlav-cleaner` is a separate microservice.
-
-It provides cleanup and validation APIs for individual pipeline services and data types, including Kafka, Ingestor, and MinIO.
-
-Cleaner never deletes Generator's PostgreSQL scenarios or events.
-
+`commerce-etlav-cleaner` is a separate microservice. \
+It provides cleanup and validation APIs for individual pipeline services and data types, including Kafka, Ingestor, and MinIO. \
+Cleaner never deletes Generator's PostgreSQL scenarios or events. \
 Generator's source data persists across tests.
 
 ### Failure Investigation
 
-If a test fails, Tester stops and reports the failure.
-
-**Cleanup must not run automatically after failure.**
-
-The developer must be able to inspect Kafka, Ingestor, MinIO, and other relevant state before explicitly requesting cleanup.
-
+If a test fails, Tester stops and reports the failure. \
+**Cleanup must not run automatically after failure.** \
+The developer must be able to inspect Kafka, Ingestor, MinIO, and other relevant state before explicitly requesting cleanup. \
 The MVP supports one test at a time.
 
 ## 11. Development and Deployment
@@ -656,12 +599,9 @@ The MVP supports one test at a time.
 
 ### Local Development
 
-The initial implementation should run locally before Docker Compose integration.
-
-Database schema initialization is performed separately from the Java application.
-
-Python initialization populates scenario data before publication.
-
+The initial implementation should run locally before Docker Compose integration. \
+Database schema initialization is performed separately from the Java application. \
+Python initialization populates scenario data before publication. \
 The Java application validates the database schema and registered scenarios at startup.
 
 ### Docker Compose
@@ -676,12 +616,9 @@ The initial end-to-end environment will include:
 - Tester
 - Cleaner
 
-Scenario metadata and Python script directories are mounted into Generator.
-
-PostgreSQL uses persistent storage.
-
-The Java JAR and Docker image do not contain large generated event datasets.
-
+Scenario metadata and Python script directories are mounted into Generator. \
+PostgreSQL uses persistent storage that remain after docker restart. \ 
+The Java JAR and Docker image do not contain large generated event datasets. \
 Docker configuration and startup instructions will be added during implementation.
 
 ## 12. Future Extensions and References
