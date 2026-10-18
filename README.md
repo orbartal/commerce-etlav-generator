@@ -52,7 +52,7 @@ The Tester uses the Generator to create and publish data to Kafka. \
 The Ingestor consumes data from Kafka and writes it to MinIO. \
 The Tester validates the data in MinIO based on the scenario triggered by the Generator. \
 The Tester uses the Cleaner microservice to delete all data before each test. \
-The Tester uses the Cleaner microservice to delete data from Kafka, Ingestor and MinIO before each test. \
+The Tester uses the Cleaner microservice before each test to delete all data from Kafka, the Ingestor and MinIO. \
 The Tester preserves the post test data to enable Developers to investigate potential failures. \
 A post-test data cleanup requires an explicit, manual call to the Cleaner API.
 
@@ -452,9 +452,8 @@ Every instance contains:
 
 `ErrorType` is an interface implemented only by Java enums.
 
-Each enum value identifies a specific exception creation location. \
-The convention is to use each error enum value at one exception factory location in code. \
-In order to make it easier to locate the source of an error.
+Each enum value identifies a unique exception factory location in the Java code. \
+This convention makes it easier to locate the source of an error, as it can arrive from only one line of code.
 
 ### Exception Factory
 
