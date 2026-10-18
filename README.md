@@ -13,7 +13,7 @@ Generator is designed for reproducible testing, simple operation, and future ext
 ## Table of Contents
 
 - [1. Context and Goals](#1-context-and-goals)
-- [2. Architecture](#2-architecture)
+- [2. Generator Architecture](#2-generator-architecture)
 - [3. Scenario and Event Model](#3-scenario-and-event-model)
 - [4. PostgreSQL Storage](#4-postgresql-storage)
 - [5. Python Initialization](#5-python-initialization)
@@ -51,8 +51,10 @@ The Tester initiates each test, validates the initial and final states, and rese
 The Tester uses the Generator to create and publish data to Kafka. \
 The Ingestor consumes data from Kafka and writes it to MinIO. \
 The Tester validates the data in MinIO based on the scenario triggered by the Generator. \
-The Tester uses the Cleaner microservice to delete all data before and after each test. \
-If a test fails, the Tester preserves the data so the Developer can investigate the failure.
+The Tester uses the Cleaner microservice to delete all data before and after each successful test. \
+The Tester uses the Cleaner microservice to delete data from Kafka, Ingestor and MinIO before each test. \
+The Tester preserves the post test data to enable Developers to investigate potential failures. \
+A post-test data cleanup requires an explicit, manual call to the Cleaner API.
 
 ```text
 Tester --> Cleaner (delete data from three services)
@@ -239,6 +241,14 @@ Shared Python components provide reusable generation and persistence functionali
 **EventsManager:** A shared script that coordinates scenario loading, generation, persistence, and readiness validation. \
 Scenario-specific scripts should contain only the logic unique to their scenarios.
 
+### On Generator server startup
+When the Generator Spring Boot microservice starts:
+- Validates that the PostgreSQL `scenario` and `event` tables exist. The SQL tables are already created using an external script/config.
+- Initializes the `scenario` table using the registered scenario JSON files.
+- Does not modify the `event` table, which remains empty after startup.
+
+Developers must manually run a Python script to generate event data for a specific scenario from its JSON definition.
+
 ### Initialization Process
 
 1. Read the scenario UUID and locate its metadata and generator script.
@@ -260,7 +270,7 @@ A subsequent initialization attempt deletes those incomplete events and restarts
 
 The manager refuses to initialize a scenario that is already ready. \
 The MVP does not provide an API to regenerate or overwrite a ready scenario. \
-A developer may manually modify PostgreSQL to permit regene|ation, but this is not recommended.
+A developer may manually modify PostgreSQL to permit regeneration, but this is not recommended.
 
 ### Initialization Safety
 
